@@ -2,12 +2,18 @@ import numpy as np
 
 def create_salt_and_pepper_noise(height=100, width=100, salt_prob=0.05, pepper_prob=0.05):
     """
-    Returns an image ∈ [-1, 1] containing salt (I = 1.0) and 
+    Returns an image ∈ [-1, 1] containing salt (I = 1.0) and
     pepper (I = -1.0) noise with respective probability distributions
     equal to salt_prob and pepper_prob. Pixels without noise have values of 0.5.
     """
     ### START CODE HERE ###
-    # TODO
+    img = np.full((height, width), 0.5)
+
+    noise = np.random.rand(height, width)
+
+    img[noise < salt_prob] = 1.0
+
+    img[noise > (1 - pepper_prob)] = -1.0
     ### END CODE HERE ###
     return img
 
