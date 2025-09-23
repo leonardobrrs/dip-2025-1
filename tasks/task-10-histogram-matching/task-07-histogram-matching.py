@@ -24,10 +24,22 @@ Notes:
 - You can assume the input images are already loaded and in RGB format (not BGR).
 """
 
-import cv2 as cv
+import cv2
 import numpy as np
-import scikitimage as ski
+from skimage.exposure import match_histograms
+
 
 def match_histograms_rgb(source_img: np.ndarray, reference_img: np.ndarray) -> np.ndarray:
-    # Your implementation here
-    pass
+
+    source_lab = cv2.cvtColor(source_img, cv2.COLOR_RGB2LAB)
+    reference_lab = cv2.cvtColor(reference_img, cv2.COLOR_RGB2LAB)
+
+    matched_lab = match_histograms(
+        source_lab,
+        reference_lab,
+        channel_axis=-1
+    )
+
+    matched_rgb = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
+
+    return matched_rgb.astype(np.uint8)
