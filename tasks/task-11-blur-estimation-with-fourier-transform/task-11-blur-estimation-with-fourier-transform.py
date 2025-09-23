@@ -22,28 +22,35 @@ from typing import Union
 import numpy as np
 import cv2
 
-
 def frequency_blur_score(
-    image: Union[np.ndarray, "cv2.Mat"],
-    center_size: int = 60
+        image: Union[np.ndarray, "cv2.Mat"],
+        center_size: int = 60
 ) -> float:
-    """
-    Compute a blur/sharpness score in the frequency domain.
+    if image.ndim == 3 and image.shape[2] == 3:
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_image = image
 
-    Parameters
-    ----------
-    image : np.ndarray
-        Input image, grayscale or BGR. Any dtype accepted; will be converted to float32.
-    center_size : int, default=60
-        Side length of the central square (low-frequency) region to suppress.
+    f_image = np.asarray(gray_image, dtype=np.float32)
+    dft = cv2.dft(f_image, flags=cv2.DFT_COMPLEX_OUTPUT)
+    dft_shift = np.fft.fftshift(dft)
 
-    Returns
-    -------
-    float
-        A scalar score. You should make it so that SHARPER images get a HIGHER score.
-        (This will align with the grader's expectation.)
-    """
-    # ====== YOUR CODE STARTS HERE ======
-    score = 0.0
-    # ====== YOUR CODE ENDS HERE ======
+    rows, cols = gray_image.shape
+    crow, ccol = rows // 2, cols // 2
+
+    half_size = center_size // 2
+
+    dft_shift[crow - half_size: crow + half_size, ccol - half_size: ccol + half_size] = 0
+
+    magnitude_spectrum = cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1])
+
+    total_pixels = rows * cols
+    low_freq_pixels = center_size * center_size
+
+    high_freq_pixels = total_pixels - low_freq_pixels
+    if high_freq_pixels <= 0:
+        return 0.0
+
+    score = np.sum(magnitude_spectrum) / high_freq_pixels
+
     return score
